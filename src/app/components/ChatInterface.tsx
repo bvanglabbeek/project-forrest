@@ -12,7 +12,7 @@ interface Message {
 
 function renderWithCitations(content: string) {
   // Replace citations like 【4:1†source】 with a styled <sup> element
-  return content.replace(/【(\d+:\d+[^】]*)】/g, (match, p1) => {
+  return content.replace(/【(\d+:\d+[^】]*)】/g, (_, p1) => {
     return `<sup class='citation-badge'>[${p1}]</sup>`;
   });
 }

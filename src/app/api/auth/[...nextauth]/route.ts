@@ -31,7 +31,7 @@ const handler = NextAuth({
       }
       return session;
     },
-    async jwt({ token, user, profile }) {
+    async jwt({ token, profile }) {
       if (profile && (profile as any).login) {
         token.login = (profile as any).login;
       }

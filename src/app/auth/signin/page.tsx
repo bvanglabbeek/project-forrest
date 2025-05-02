@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = "force-dynamic";
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
@@ -10,6 +11,17 @@ function SignInContent() {
   const callbackUrl = searchParams.get('callbackUrl') || '/';
   const error = searchParams.get('error');
 
+  let errorMessage = '';
+  if (error) {
+    if (error === 'AccessDenied') {
+      errorMessage = 'You do not have access to this resource.';
+    } else if (error === 'OAuthAccountNotLinked') {
+      errorMessage = 'Please sign in with the same provider you originally used.';
+    } else {
+      errorMessage = `Sign-in error: ${error}`;
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -17,11 +29,9 @@ function SignInContent() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
-          {error && (
-            <p className="mt-2 text-center text-sm text-red-600">
-              {error === 'AccessDenied'
-                ? 'You do not have access to this resource.'
-                : 'An error occurred while signing in.'}
+          {errorMessage && (
+            <p className="mt-2 text-center text-sm text-red-600 font-bold">
+              {errorMessage}
             </p>
           )}
         </div>

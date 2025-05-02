@@ -41,6 +41,11 @@ const handler = NextAuth({
       return token;
     },
   },
+  events: {
+    signIn({ user, account, profile, isNewUser }) {
+      console.log('NextAuth signIn:', { user, account, profile, isNewUser });
+    }
+  },
 });
 
 export { handler as GET, handler as POST }; 

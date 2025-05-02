@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Header from './Header';
 import ChatInterface from './ChatInterface';
+import ErrorBoundary from './ErrorBoundary';
 
 export default function ChatPageClient() {
   const [mode, setMode] = useState('completions');
@@ -14,11 +15,13 @@ export default function ChatPageClient() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto">
-        <Header mode={mode} setMode={handleModeChange} />
-        <ChatInterface key={key} mode={mode} />
-      </div>
-    </main>
+    <ErrorBoundary>
+      <main className="min-h-screen bg-gray-50">
+        <div className="container mx-auto">
+          <Header mode={mode} setMode={handleModeChange} />
+          <ChatInterface key={key} mode={mode} />
+        </div>
+      </main>
+    </ErrorBoundary>
   );
 } 

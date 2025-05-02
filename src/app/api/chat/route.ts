@@ -86,9 +86,13 @@ export async function POST(request: Request) {
     } else {
       errorDetails = { error: JSON.stringify(error) };
     }
+    // Always log errors
     console.error('Error in chat API:', errorDetails);
+    // Return error details in development, generic message in production
     return NextResponse.json(
-      { error: 'Failed to process chat request', ...errorDetails },
+      process.env.NODE_ENV !== 'production'
+        ? { error: 'Failed to process chat request', ...errorDetails }
+        : { error: 'Failed to process chat request' },
       { status: 500 }
     );
   }

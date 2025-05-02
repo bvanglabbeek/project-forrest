@@ -1,10 +1,11 @@
 'use client';
-export const dynamic = "force-dynamic";
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function SignIn() {
+// Component that uses useSearchParams
+function SignInContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
   const error = searchParams.get('error');
@@ -35,4 +36,13 @@ export default function SignIn() {
       </div>
     </div>
   );
-} 
+}
+
+// Main component that uses Suspense
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInContent />
+    </Suspense>
+  );
+}

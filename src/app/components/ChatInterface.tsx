@@ -1,12 +1,20 @@
 'use client';
 
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useState, useRef, useEffect } from 'react';
 import DebugPanel from './DebugPanel';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+}
+
+function renderWithCitations(content: string) {
+  // Replace citations like 【4:1†source】 with a styled <sup> element
+  return content.replace(/【(\d+:\d+[^】]*)】/g, (match, p1) => {
+    return `<sup class='citation-badge'>[${p1}]</sup>`;
+  });
 }
 
 export default function ChatInterface({ mode }: { mode: string }) {
@@ -112,11 +120,11 @@ export default function ChatInterface({ mode }: { mode: string }) {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
+    <div className="flex flex-col h-screen w-full max-w-4xl mx-auto p-4">
       <div className="mb-4 flex justify-end">
         {/* Remove the select element as mode is now a prop */}
       </div>
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+      <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-0">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -132,7 +140,25 @@ export default function ChatInterface({ mode }: { mode: string }) {
               }`}
             >
               {message.role === 'assistant' ? (
-                <ReactMarkdown>{message.content}</ReactMarkdown>
+                <div className="assistant-message">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      // Render HTML for citations
+                      p: ({ node, children, ...props }) => {
+                        let text = '';
+                        if (Array.isArray(children)) {
+                          text = children.join('');
+                        } else if (typeof children === 'string') {
+                          text = children;
+                        }
+                        return <p {...props} dangerouslySetInnerHTML={{ __html: renderWithCitations(text) }} />;
+                      },
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
               ) : (
                 message.content
               )}

@@ -1,11 +1,23 @@
+'use client';
+
+import React, { useState } from 'react';
+import Header from './components/Header';
 import ChatInterface from './components/ChatInterface';
 
 export default function Home() {
+  const [mode, setMode] = useState('completions');
+  const [key, setKey] = useState(0); // for resetting chat
+
+  const handleModeChange = (newMode: string) => {
+    setMode(newMode);
+    setKey((k) => k + 1); // force ChatInterface to remount and clear chat
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto">
-        <h1 className="text-3xl font-bold text-center py-6">AI Chat Assistant</h1>
-        <ChatInterface />
+        <Header mode={mode} setMode={handleModeChange} />
+        <ChatInterface key={key} mode={mode} />
       </div>
     </main>
   );

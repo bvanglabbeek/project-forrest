@@ -1,16 +1,19 @@
 'use client';
 
+import ReactMarkdown from 'react-markdown';
 import { useState, useRef, useEffect } from 'react';
+import DebugPanel from './DebugPanel';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export default function ChatInterface() {
+export default function ChatInterface({ mode }: { mode: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastError, setLastError] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -38,15 +41,40 @@ export default function ChatInterface() {
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
+          mode,
         }),
       });
 
+      let data: any = null;
+      let errorData: any = null;
       if (!response.ok) {
+        try {
+          errorData = await response.json();
+        } catch (jsonErr) {
+          errorData = {
+            status: response.status,
+            statusText: response.statusText,
+            message: 'Failed to parse error JSON',
+            raw: await response.text(),
+          };
+        }
+        setLastError(errorData);
         throw new Error('Failed to get response');
       }
 
-      const data = await response.json();
-      setMessages((prev) => [...prev, data.response]);
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        setLastError({
+          status: response.status,
+          statusText: response.statusText,
+          message: 'Failed to parse response JSON',
+          raw: await response.text(),
+        });
+        throw new Error('Failed to parse response JSON');
+      }
+      setMessages((prev) => [...prev, (data as any).response]);
+      setLastError(null);
     } catch (error) {
       console.error('Error:', error);
       setMessages((prev) => [
@@ -56,13 +84,38 @@ export default function ChatInterface() {
           content: 'Sorry, I encountered an error. Please try again.',
         },
       ]);
+      setLastError(error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Chat management actions
+  const handleSaveChat = () => {
+    const chatData = JSON.stringify(messages, null, 2);
+    const blob = new Blob([chatData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-${new Date().toISOString()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyChat = () => {
+    const chatText = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+    navigator.clipboard.writeText(chatText);
+  };
+
+  const handleClearChat = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
+      <div className="mb-4 flex justify-end">
+        {/* Remove the select element as mode is now a prop */}
+      </div>
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
         {messages.map((message, index) => (
           <div
@@ -78,7 +131,11 @@ export default function ChatInterface() {
                   : 'bg-gray-200 text-gray-800'
               }`}
             >
-              {message.content}
+              {message.role === 'assistant' ? (
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              ) : (
+                message.content
+              )}
             </div>
           </div>
         ))}
@@ -90,6 +147,33 @@ export default function ChatInterface() {
           </div>
         )}
         <div ref={messagesEndRef} />
+      </div>
+      {/* Chat Management Buttons */}
+      <div className="flex gap-2 mb-4 justify-end">
+        <button
+          onClick={handleSaveChat}
+          disabled={messages.length === 0}
+          className={`px-3 py-1 rounded text-sm font-semibold transition-colors duration-150
+            ${messages.length === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-900'}`}
+        >
+          Save Chat
+        </button>
+        <button
+          onClick={handleCopyChat}
+          disabled={messages.length === 0}
+          className={`px-3 py-1 rounded text-sm font-semibold transition-colors duration-150
+            ${messages.length === 0 ? 'bg-blue-100 text-blue-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-800'}`}
+        >
+          Copy Chat
+        </button>
+        <button
+          onClick={handleClearChat}
+          disabled={messages.length === 0}
+          className={`px-3 py-1 rounded text-sm font-semibold transition-colors duration-150
+            ${messages.length === 0 ? 'bg-red-100 text-red-300 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-700'}`}
+        >
+          Clear Chat
+        </button>
       </div>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
@@ -108,6 +192,7 @@ export default function ChatInterface() {
           Send
         </button>
       </form>
+      <DebugPanel error={lastError} />
     </div>
   );
 } 

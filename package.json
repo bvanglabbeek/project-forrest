@@ -15,9 +15,11 @@
   },
   "dependencies": {
     "next": "^14.2.28",
+    "next-auth": "^4.24.11",
     "openai": "^4.96.2",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^0.2.1",

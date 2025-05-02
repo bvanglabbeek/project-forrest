@@ -37,11 +37,11 @@
   "scripts": {
     "build": "next build",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
-    "check": "opennextjs-cloudflare build && tsc && wrangler deploy --dry-run",
-    "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "check": "npx opennext build && tsc && npx wrangler deploy --dry-run",
+    "deploy": "npx opennext build && npx wrangler deploy",
     "dev": "next dev",
     "lint": "next lint",
-    "preview": "opennextjs-cloudflare build && wrangler dev",
+    "preview": "npx opennext build && npx wrangler dev",
     "start": "next start"
   }
 }

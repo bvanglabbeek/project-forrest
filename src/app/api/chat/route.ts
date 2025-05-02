@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { AI_CONFIG } from '@/config/ai';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client only if we have an API key
+const openai = process.env.OPENAI_API_KEY 
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  : null;
 
 async function handlePost(request: Request) {
   const { messages, mode } = await request.json() as { messages: any[], mode?: string };
@@ -14,6 +16,13 @@ async function handlePost(request: Request) {
     return NextResponse.json(
       { error: 'Messages are required and must be an array' },
       { status: 400 }
+    );
+  }
+
+  if (!openai) {
+    return NextResponse.json(
+      { error: 'OpenAI client not configured' },
+      { status: 500 }
     );
   }
 

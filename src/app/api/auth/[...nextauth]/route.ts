@@ -16,7 +16,10 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ profile }) {
       // Only allow users whose GitHub username is in the list
-      return profile && allowedUsernames.includes(profile.login);
+      if (profile && allowedUsernames.includes(profile.login)) {
+        return true;
+      }
+      return false; // Explicitly deny if not allowed
     },
     async session({ session, token }) {
       // Add the GitHub full name and username to the session object

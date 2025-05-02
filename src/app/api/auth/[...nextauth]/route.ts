@@ -16,27 +16,27 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ profile }) {
       // Only allow users whose GitHub username is in the list
-      if (profile && allowedUsernames.includes(profile.login)) {
+      if (profile && allowedUsernames.includes((profile as any).login)) {
         return true;
       }
       return false; // Explicitly deny if not allowed
     },
     async session({ session, token }) {
       // Add the GitHub full name and username to the session object
-      if (token && token.name) {
+      if (session.user && token && token.name) {
         session.user.name = token.name;
       }
-      if (token && token.login) {
-        session.user.username = token.login;
+      if (session.user && token && token.login) {
+        (session.user as any).username = token.login;
       }
       return session;
     },
     async jwt({ token, user, profile }) {
-      if (profile && profile.login) {
-        token.login = profile.login;
+      if (profile && (profile as any).login) {
+        token.login = (profile as any).login;
       }
-      if (profile && profile.name) {
-        token.name = profile.name;
+      if (profile && (profile as any).name) {
+        token.name = (profile as any).name;
       }
       return token;
     },

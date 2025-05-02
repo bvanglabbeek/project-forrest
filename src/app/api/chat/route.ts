@@ -8,7 +8,7 @@ const openai = new OpenAI({
 });
 
 async function handlePost(request: Request) {
-  const { messages, mode } = await request.json();
+  const { messages, mode } = await request.json() as { messages: any[], mode?: string };
 
   if (!messages || !Array.isArray(messages)) {
     return NextResponse.json(
@@ -61,7 +61,7 @@ async function handlePost(request: Request) {
       messages: messages,
       temperature: 0.7,
     });
-    response = completion.choices[0].message;
+    response = completion.choices[0]?.message ?? { role: 'assistant', content: 'No response generated' };
   }
 
   return NextResponse.json({ response });
